@@ -29,7 +29,6 @@ void recover(int i) {while (i < P) c[i] = inf, i += lb(i);}
 int main() {
 	ios::sync_with_stdio(false);
 	cin >> n;
-	memset (f, 0, sizeof f);
 	for (int i = 2; i < P; i ++) {
 		if (!v[i]) {
 			p[++ p[0]] = i;
@@ -49,13 +48,12 @@ int main() {
 	}
 	for (int i = 0; i < P; i ++) c[i] = inf;
 	for (int i = 1; i <= p[0]; i ++) {
-		int cnt = 0, res, tmp;
+		if (e[i].size() == 0) continue; 
+		int cnt = 0, res, tmp, temp;
 		for (int j : e[i]) {
-			cout << j << endl;
 			cnt += 2;
-			d[j] = cnt - j + 500001;
-			res = ask(d[j]);
-			cout << p[i] << ' ' << j << ' ' << res << endl;
+			d[j] = (cnt += 2) - j + 500001;
+			res = ask(d[j] + 1);
 			if (res == inf) {
 				if (j == 1) {
 					if (ans < 1) 
@@ -63,14 +61,17 @@ int main() {
 				}
 				else {
 					if (ans < 2) 
-						ans = 2, l = i - 1, r = i;
+						ans = 2, l = j - 1, r = j;
 				}
 			}
 			else {
-				tmp = j - res + 1 + min(d[j] - d[res], res - 1 + n - j);
+				tmp = j - res + 1 + (temp = min(d[j] - d[res] + 1, res - 1 + n - j));
 				if (tmp > ans) {
-					//cout << p[i] << ' ' << tmp << endl;
 					ans = tmp;
+					l = res, r = j;
+					if (temp == 0) continue;
+					if (temp < res) l -= temp;
+					else l = 1, r += temp - (res - 1);
 				}
 			}
 			add(d[j], j);
@@ -78,7 +79,6 @@ int main() {
 		for (int j : e[i]) 
 			recover(d[j]);
 	}
-	cout << ans;
-	//cout << l << ' ' << r << endl;
+	cout << l << ' ' << r << endl;
 	return 0;
 }
