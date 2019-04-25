@@ -1,0 +1,6 @@
+n, m = map(int, input().split())
+a = list(map(int, input().split()))
+b = list(map(int, input().split()))
+c = sum((i & 1) for i in a)
+d = sum((i & 1) for i in b)
+print(min(c, m - d) + min(n - c, d))
