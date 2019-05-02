@@ -35,7 +35,6 @@ int main() {
 			s2.insert((node){i, c[i]});
 		}
 		int flag = 1;
-		//printf("%d\n", s1.size());
 		for (int i = 1; i <= n; i ++) {
 			if ((*s2.begin()).cnt > n + 1 - i) {
 				flag = 0;
@@ -43,11 +42,6 @@ int main() {
 			}
 			auto p = s1.begin();
 			if (*p == a[i]) p ++;
-			/*printf("%d %d %d %d\n", i, s1.size(), s2.size(), *p);
-			for (auto i : s1)
-				printf("! %d\n", i);
-			for (auto i :s2)
-				printf("? %d %d\n", i.i, i.cnt);*/
 			s2.erase((node){a[i], c[a[i]]});
 			c[a[i]] --;
 			if (c[a[i]] > 0) s2.insert((node){a[i], c[a[i]]});
@@ -72,7 +66,6 @@ int main() {
 				d[*p] --, b[i] = *p;
 				if (d[*p] == 0) s1.erase(*p);
 			}
-			//printf("  %d\n", b[i]);
 		}
 		if (!flag) puts("Impossible");
 		else {
