@@ -43,11 +43,13 @@ namespace minRectCover {
 			return x * a.y - y * a.x;
 		}
 
-	}p[N], q[N], rc[8];
+	}p[N], q[N], rc[4];
 
 	double sqr(double x) {return x * x;}
 	double abs(point a) {return sqrt(a / a);}
 	int sgn(double x) {return fabs(x) < eps ? 0 : (x < 0 ? -1 : 1);}
+	point vertical(point a, point b) {return point(a.x + a.y - b.y, a.y - a.x + b.x) - a;}//与ab向量垂直的向量
+	point vec(point a){return a / abs(a);}
 
 	void convexhull(int n, point *hull, int &top) {//如果要计算周长需要特判 n==2
 		for (int i = 1; i < n; i ++)
@@ -80,59 +82,34 @@ namespace minRectCover {
 			scanf("%lf %lf", &p[i].x, &p[i].y);
 
 		convexhull(n, q, n);
-		for (int i = 0; i < n;i ++)
-			printf("%lf %lf\n", q[i].x, q[i].y);
-
+		
 		double ans = 1e20;
 		int l = 1, r = 1, t = 1;
 		double L, R, D, H;
-		if (n == -1) {
-			for (int i = 0; i < n; i ++) {
-				D = abs(q[i] - q[i + 1]);
-				l = r = t = (i + 2) % n;
-				if (sgn((q[l] - q[i]) / (q[i + 1] - q[i])) > -1) l = (l + 1) % n;
-				if (sgn((q[r] - q[i + 1]) / (q[i] - q[i + 1])) > -1) r = (r - 1 + n) % n;
-				printf("%d %d %d\n", i, l, r);
-				L = (q[i + 1] - q[i]) / (q[l] - q[i]) / D, R = (q[i + 1] - q[i]) / (q[r] - q[i]) / D;
-				H = (q[i + 1] - q[i]) * (q[t] - q[i]) / D;
-				if (H < 0) H = -H;
-				double tmp = (R - L) * H;
-				if (tmp < ans) {
-					ans = tmp;
-					rc[0] = q[i] + (q[i + 1] - q[i]) * (R / D);
-					rc[1] = rc[0] + (q[r] - rc[0]) * (H / abs(rc[0] - q[r]));
-					rc[2] = rc[1] - (rc[0] - q[i]) * ((R - L) / abs(q[i] - rc[0]));
-					rc[3] = rc[2] - (rc[1] - rc[0]); 
-				}
-			}	
-		}
-		else {
-			for (int i = 0; i < n; i ++) {
-				D = abs(q[i] - q[i + 1]);
-				while (sgn((q[i + 1] - q[i]) * (q[t + 1] - q[i]) - (q[i + 1] - q[i]) * (q[t] - q[i])) > -1) t = (t + 1) % n;
-				while (sgn((q[i + 1] - q[i]) / (q[r + 1] - q[i]) - (q[i + 1] - q[i]) / (q[r] - q[i])) > -1) r = (r + 1) % n;
-				if (i == 0) l = r;
-				while (sgn((q[i + 1] - q[i]) / (q[l + 1] - q[i]) - (q[i + 1] - q[i]) / (q[l] - q[i])) <  1) l = (l + 1) % n;
-				printf("%d %d %d %d\n", i, l, r, t);
-				L = (q[i + 1] - q[i]) / (q[l] - q[i]) / D, R = (q[i + 1] - q[i]) / (q[r] - q[i]) / D;
-				H = (q[i + 1] - q[i]) * (q[t] - q[i]) / D;
-				if (H < 0) H = -H;
-				double tmp = (R - L) * H;
-				if (tmp < ans) {
-					ans = tmp;
-					rc[0] = q[i] + (q[i + 1] - q[i]) * (R / D);
-					rc[1] = rc[0] + (q[r] - rc[0]) * (H / abs(rc[0] - q[r]));
-					rc[2] = rc[1] - (rc[0] - q[i]) * ((R - L) / abs(q[i] - rc[0]));
-					rc[3] = rc[2] - (rc[1] - rc[0]); 
-				}
-			}	
-		}
+		for (int i = 0; i < n; i ++) {
+			D = abs(q[i] - q[i + 1]);
+			while (sgn((q[i + 1] - q[i]) * (q[t + 1] - q[i]) - (q[i + 1] - q[i]) * (q[t] - q[i])) > -1) t = (t + 1) % n;
+			while (sgn((q[i + 1] - q[i]) / (q[r + 1] - q[i]) - (q[i + 1] - q[i]) / (q[r] - q[i])) > -1) r = (r + 1) % n;
+			if (i == 0) l = r;
+			while (sgn((q[i + 1] - q[i]) / (q[l + 1] - q[i]) - (q[i + 1] - q[i]) / (q[l] - q[i])) <  1) l = (l + 1) % n;
+			L = fabs((q[i + 1] - q[i]) / (q[l] - q[i]) / D); 
+			R = fabs((q[i + 1] - q[i]) / (q[r] - q[i]) / D);
+			H = fabs((q[i + 1] - q[i]) * (q[t] - q[i]) / D);
+			double tmp = (R + L) * H;
+			if (tmp < ans) {
+				ans = tmp;
+				rc[0] = q[i] + (q[i + 1] - q[i]) * (R / D);//右下
+				rc[1] = rc[0] + vec(vertical(q[i], q[i + 1])) * H;//右上
+				rc[2] = rc[1] - (rc[0] - q[i]) * ((R + L) / abs(q[i] - rc[0]));//左上
+				rc[3] = rc[2] - (rc[1] - rc[0]); 
+			}
+		}	
 
 		printf("%.6f\n", ans);
 		int fir = 0;
-		/*for (int i = 1; i < 4; i ++)
+		for (int i = 1; i < 4; i ++)
 			if (rc[i] < rc[fir])
-				fir = i;*/
+				fir = i;
 		for (int i = 0; i < 4; i ++)
 			printf("%.6f %.6f\n", rc[(fir + i) % 4].x, rc[(fir + i) % 4].y);
 	}
