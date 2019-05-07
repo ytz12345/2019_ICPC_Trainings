@@ -1,83 +1,83 @@
+/*
+ *最小矩形覆盖,保留六位小数,逆时针输出四个顶点坐标
+ */
 #include <bits/stdc++.h>
 
 using namespace std;
-//最小矩形覆盖，保留5位小数
+
 namespace minRectCover {
-	typedef double D;
+
 	const int N = 1e5 + 5;
+	const double eps = 1e-8;
 
-	struct P{
-		D x, y;
-		P(){}
-		P(D x, D y):x(x), y(y){}
-	}p[N], pp[N], hull[N], pivot, A, B, C, rect[8];
+	struct point{
+		double x, y;
+		point(){}
+		point(double x, double y):x(x), y(y){}
 
-	int n, i, j, l, r, k;
-	D w, h, ans = 1e20, tmp, len;
-	bool del[N];
-
-	D sqr(D x) {return x * x;}
-	int zero(D x) {return fabs(x) < 1e-4;}
-	int sig(D x) {if (fabs(x) < 1e-8) return 0; return x > 0 ? 1 : -1;}
-	D cross(P A, P B, P C) {return (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x);}
-	D distsqr(P A, P B) {return sqr(B.x - A.x) + sqr(B.y - A.y);}
-
-	bool cmp(P a, P b) {
-		D t = cross(pivot, a, b);
-		return sig(t) == 1 || sig(t) == 0 && sig(distsqr(pivot, a) - distsqr(pivot, b)) == -1;
-	}
-
-	void convexhull(int n, P stck[], int &m) {
-		int i, k, top;
-		for (i = 0; i < n; i ++) pp[i] = p[i];
-		for (k = 0, i = 1; i < n; i ++) if (pp[i].y < pp[k].y || (pp[i].y == pp[k].y && pp[i].x < pp[k].x)) k = i;
-		pivot = pp[k]; pp[k] = pp[0], pp[0] = pivot;
-		sort (pp + 1, pp + n, cmp);
-		stck[0] = pp[0], stck[1] = pp[1];
-		for (top = 1, i = 2; i < n; i ++) {
-			while (top && sig(cross(pp[i], stck[top], stck[top - 1])) >= 0) -- top;
-			stck[++ top] = pp[i];
+		bool operator < (const point &a) const {
+			return fabs(y - a.y) < eps ? x < a.x : y < a.y;
 		}
-		m = top + 1;
-	}
 
-	D area(P A, P B, P C) {return fabs(cross(A, B, C));}
-	P vertical(P A, P B) {return P(A.x - B.y + A.y, A.y + B.x - A.x);}
+		point operator - (const point &a) const {
+			return point(x - a.x, y - a.y);
+		}
+
+		double operator * (const point &a) const { // X
+			return x * a.y - y * a.x;
+		}
+
+	}p[N], q[N], rc[8];
+
+	double sqr(double x) {return x * x;}
+	double dot(point a, point b) {return a.x * b.x + a.y * b.y;} // .
+	double abs(point a) {return sqrt(dot(a, a));}
+	int sgn(double x) {return fabs(x) < eps ? 0 : (x < 0 ? -1 : 1);}
+
+	void convexhull(int n, point *hull, int &top) {//如果要计算周长需要特判 n==2
+		for (int i = 1; i < n; i ++)
+			if (p[i] < p[0])
+				swap(p[i], p[0]);
+		sort (p + 1, p + n, [&](point a, point b){
+			double t = (a - p[0]) * (b - p[0]);
+			if (fabs(t) < eps) return sgn(abs(p[0] - a) - abs(p[0] - b)) < 0;
+			return t > 0;
+		});
+
+		int cnt = 0;//去重
+		for (int i = 1; i < n; i ++)
+			if (sgn(p[i].x - p[cnt].x) != 0 || sgn(p[i].y - p[cnt].y) != 0)
+				p[++ cnt] = p[i];
+		n = cnt + 1;
+		
+		hull[top = 1] = p[0];
+		for (int i = 1; i < n; i ++) {
+			while (top > 1 && (hull[top] - hull[top - 1]) * (p[i] - hull[top]) < eps) top --;
+			hull[++ top] = p[i];
+		}
+		hull[0] = hull[top];
+	}
 
 	void main() {
+		int n;
 		scanf("%d", &n);
-		for (i = 0; i < n; i ++) scanf("%lf %lf", &p[i].x, &p[i].y);
-		convexhull(n, hull, n);
-		for (i = 1; i < n; i ++) if (zero(hull[i].x - hull[i - 1].x) && zero(hull[i].y - hull[i - 1].y)) del[i] = 1;
-		for (k = i = 0; i < n; i ++) if (!del[i]) hull[k ++] = hull[i];
-		for (hull[n = k] = hull[i = 0]; i < n; i ++) {
-			A = hull[i], B = hull[i + 1], C = vertical(A, B);
-			while (sig(area(A, B, hull[j]) - area(A, B, hull[j + 1])) < 1) j = (j + 1) % n;
-			while (sig(cross(A, C, hull[l]) - cross(A, C, hull[l + 1])) < 1) l = (l + 1) % n;
-			while (sig(cross(A, C, hull[r]) - cross(A, C, hull[r + 1])) > -1) r = (r + 1) % n;
-			len = sqrt(distsqr(A, B));
-			h = area(A, B, hull[j]) / len;
-			w = (cross(A, C, hull[l]) - cross(A, C, hull[r])) / len;
-			if (sig(h * w - ans) == -1) {
-				ans = h * w;
-				tmp = area(A, B, hull[l]) / len / len;
-				rect[0] = P(hull[l].x + tmp * (A.x - C.x), hull[l].y + tmp * (A.y - C.y));
-				tmp = h / len;
-				rect[3] = P(rect[0].x + tmp * (C.x - A.x), rect[0].y + tmp * (C.y - A.y));
-				tmp = w / len;
-				rect[1] = P(rect[0].x + tmp * (B.x - A.x), rect[0].y + tmp * (B.y - A.y));
-				rect[2] = P(rect[3].x + tmp * (B.x - A.x), rect[3].y + tmp * (B.y - A.y));
-			}
+		for (int i = 0; i < n; i ++)
+			scanf("%lf %lf", &p[i].x, &p[i].y);
+
+		convexhull(n, q, n);
+
+		double ans = 0;
+		int l = 1, r = 1, t = 1;
+		double L, R, D, H;
+		for (int i = 0; i < n; i ++) {
+			D = abs(q[i] - q[i + 1]);
+			while (sgn((q[i + 1] - q[i]) * (q[t + 1] - q[i]) - (q[i + 1] - q[i]) * (q[t] - q[i])) > -1) t = (t + 1) % n;
+			while (sgn((q[i + 1] - q[i]) * (q[r + 1] - q[i]) - (q[i + 1] - q[i]) * (q[r] - q[i])) > -1) r = (r + 1) % b;
 		}
-		for (i = 0; i < 4; i ++) rect[i + 4] = rect[i];
-		for (j = 0, i = 1; i < 4; i ++)
-			if (sig(rect[i].y - rect[j].y) == -1 ||
-				sig(rect[i].y - rect[j].y) == 0 && sig(rect[i].x - rect[j].x) == -1) j = i;
-		//printf("%.5f\n", ans);
-		for (i = 0; i < 4; i ++)
-			printf("%.5f %.5f\n", rect[j + i].x, rect[j + i].y);
 	}
-}
+
+
+} 
 
 int main() {
 	minRectCover::main();
