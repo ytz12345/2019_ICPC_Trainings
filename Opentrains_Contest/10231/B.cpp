@@ -2,53 +2,58 @@
 
 using namespace std;
 
-const int N = 30;
+const int N = 50;
 
-int n, K, a[N], b[N][100], c[N], d[N];
+int n, m, c[N];
+
+char pre[N][N], last[N];
+
+int len[N], a[N], b, ans;
+
+string t;
 
 int work() {
-	int cc = 0;
-	for (int f, j, i = 0; ; i ++) {
-		j = i % n;
-		for (int rp = 0; rp < d[i]; rp ++) {
-			f = 0;
-			for (int t = 0; t < min(c[n], c[j]); t ++) {
-				if (b[j][c[j] - t - 1] != b[n][c[n] - t - 1]) {
-					f = 1;
-					if (b[n][c[n] - t - 1] == 1) b[n][c[n] ++] = 0, b[j][c[j] ++] = 1;
-					else b[n][c[n] ++] = 1, b[j][c[j] ++] = 0;
-					break;
-				}
+	int s = m, now, ret = 0;
+	for (int i = 0; s > 0; i ++) {
+		now = i % n, c[i] = min(c[i], s), s -= c[i];
+		int p1 = b, p2 = a[now], flag = 0;
+		char c1, c2;
+		while (p1 >= 0 && p2 >= 0) {
+			if (last[p1] != pre[now][p2]) {
+				c1 = last[p1], c2 = pre[now][p2];
+				last[++ b] = c2;
+				pre[now][++ a[now]] = c1; 
+				flag = 1;
+				break;
 			}
-			if (!f) b[n][c[n] ++] = 1, b[j][c[j] ++] = 0;
-			cc ++;
-			if (cc == K) break;
+			p1 --, p2 --;
 		}
-		if (cc == K) break;
+		if (!flag) last[++ b] = 'W', pre[now][++ a[now]] = 'B';
+		if (c[i] != 1) last[b + 1] = pre[now][a[now]], pre[now][a[now] + 1] = last[b], b ++, a[now] ++;
 	}
-	int cnt = 0;
-	for (int i = 0; i < c[n]; i ++)
-		cnt += b[n][i];
-	return cnt;
+	for (int i = 0; i < m; i ++)
+		ret += last[i] == 'W';
+	return ret;
 }
 
 int main() {
-	freopen("checkers.in","r",stdin);
-	freopen("checkers.out","w",stdout);
-	cin >> n >> K;
+	//#define ONLINE_JUDGE
+	#ifndef ONLINE_JUDGE
+		freopen("checkers.in","r",stdin);
+		freopen("checkers.out","w",stdout);
+	#endif
+	cin >> n >> m;
 	for (int i = 0; i < n; i ++) {
-		char x;
-		cin >> x;
-		a[i] = x == 'W';
+		cin >> t, len[i] = -1;
+		for (int j = max((int)(t.size()) - 20, 0); j < t.size(); j ++)
+			pre[i][++ len[i]] = t[j];
 	}
-	int ans = 0;
-	for (int i = 0, j = 1 << K; i < j; i ++) {
-		c[n] = 0;
-		for (int k = 0; k < n; k ++)
-			c[k] = 1, b[k][0] = (a[k]);
-		for (int k = 0; k < K; k ++)
-			d[k] = ((i >> k) & 1) + 1;
-		ans = max(ans, work());
+	for (int i = 0, tp = 1 << m; i < tp; i ++) {
+		for (int j = 0; j < n; j ++)
+			a[j] = len[j];
+		for (int j = 0; j < m; j ++) 
+			c[j] = ((i >> j) & 1) + 1;
+		b = -1, ans = max(ans, work());
 	}
 	cout << ans;
 	return 0;

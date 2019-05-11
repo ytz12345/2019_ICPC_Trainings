@@ -4,52 +4,41 @@ using namespace std;
 
 const int N = 30;
 
-int n, K, a[N], b[N][100], c[N], d[N];
+int s[N][N], p[N][N];
 
-int work() {
-	int cc = 0;
-	for (int f, j, i = 0; ; i ++) {
-		j = i % n;
-		for (int rp = 0; rp < d[i]; rp ++) {
-			f = 0;
-			for (int t = 0; t < min(c[n], c[j]); t ++) {
-				if (b[j][c[j] - t - 1] != b[n][c[n] - t - 1]) {
-					f = 1;
-					if (b[n][c[n] - t - 1] == 1) b[n][c[n] ++] = 0, b[j][c[j] ++] = 1;
-					else b[n][c[n] ++] = 1, b[j][c[j] ++] = 0;
-					break;
-				}
-			}
-			if (!f) b[n][c[n] ++] = 1, b[j][c[j] ++] = 0;
-			cc ++;
-			if (cc == K) break;
-		}
-		if (cc == K) break;
-	}
-	int cnt = 0;
-	for (int i = 0; i < c[n]; i ++)
-		cnt += b[n][i];
-	return cnt;
-}
+char ans[N];
+
+int n, l[3], x[3][1010], y[3][1010], t;
 
 int main() {
-	freopen("checkers.in","r",stdin);
-	freopen("checkers.out","w",stdout);
-	cin >> n >> K;
-	for (int i = 0; i < n; i ++) {
-		char x;
-		cin >> x;
-		a[i] = x == 'W';
+	//#define DEBUG
+	#ifndef DEBUG
+		freopen("snakes2.in","r",stdin);
+		freopen("snakes2.out","w",stdout);
+	#endif
+	cin >> n;
+	for (int j = 0; j < n; j ++) {
+		cin >> l[j];
+		for (int i = 0; i < l[j]; i ++) {
+			cin >> x[j][i] >> y[j][i];
+			s[x[j][i]][y[j][i]] ++;
+		}
 	}
-	int ans = 0;
-	for (int i = 0, j = 1 << K; i < j; i ++) {
-		c[n] = 0;
-		for (int k = 0; k < n; k ++)
-			c[k] = 1, b[k][0] = (a[k]);
-		for (int k = 0; k < K; k ++)
-			d[k] = ((i >> k) & 1) + 1;
-		ans = max(ans, work());
+	for (int j = 0; j < n; j ++) {
+		t = 0;
+		for (int i = 0; i < l[j]; i ++) {
+			if (s[x[j][i]][y[j][i]] == 2) {
+				if (!p[x[j][i]][y[j][i]]) {
+					p[x[j][i]][y[j][i]] ++;
+					ans[t ++] = '+';
+				}
+				else{
+					ans[t ++] = '-';
+				}
+			}
+		}
+		ans[t] = 0;
+		puts(ans);
 	}
-	cout << ans;
 	return 0;
 }
