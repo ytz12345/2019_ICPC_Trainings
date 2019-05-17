@@ -2,6 +2,8 @@
 
 using namespace std;
 
+queue <int> q;
+ 
 int main() {
-	
+
 }
