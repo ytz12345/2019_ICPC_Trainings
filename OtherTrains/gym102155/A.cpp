@@ -10,21 +10,33 @@ int dp[50][N];
 
 int a[50], b[50];
 
-int n, s, c1, c2, c[50], cnt[50];
+int n, s, c1, c2, c[50], cnt[50], bj[50];
 
-inline void upd1(int &x, int y) {
-	if (x == inf || x < y) x = y;
-}
-
-inline void upd2(int &x, int y) {
-	if (x == inf || x > y) x = y;
+int dfs(int i, int j) {
+	if (i >= 2 * n * (s + 1)) return 0;
+	if (dp[i][j] != inf) return dp[i][j];
+	int t = 0;
+	for (int k = 0; k < n * 2; k ++) t += (j >> k) & 1;
+	if (c[i] < n) {
+		if ((j >> c[i]) & 1) return dp[i][j] = dfs(i + 1, j) + a[i - t];
+		else if (bj[i]) return dp[i][j] = dfs(i + 1, j | (1 << c[i])) + b[t];
+		else return dp[i][j] = max(dfs(i + 1, j) + a[i - t], dfs(i + 1, j | (1 << c[i])) + b[t]);
+	}
+	else {
+		if ((j >> c[i]) & 1) return dp[i][j] = dfs(i + 1, j) - a[i - t];
+		else if (bj[i]) return dp[i][j] = dfs(i + 1, j | (1 << c[i])) - b[t];
+		else return dp[i][j] = min(dfs(i + 1, j) - a[i - t], dfs(i + 1, j | (1 << c[i])) - b[t]);
+	}
 }
 
 int main() {
 	ios::sync_with_stdio(false);
 	cin >> n >> s;
-	for (int i = 0; i < 2 * n * (s + 1); i ++)
-		cin >> c[i];
+	for (int i = 0; i < 2 * n * (s + 1); i ++) {
+		cin >> c[i], c[i] --;
+		cnt[c[i]] ++;
+		if (cnt[c[i]] == s + 1) bj[i] = 1;
+	}
 	cin >> c1;
 	for (int i = 0; i < c1; i ++) cin >> a[i];
 	cin >> c2;
@@ -34,23 +46,6 @@ int main() {
 	for (int i = 0; i < 50; i ++)
 		for (int j = 0; j < N; j ++)
 			dp[i][j] = inf;
-	dp[0][0] = 0;
-	for (int i = 0; i < 2 * n * (s + 1); i ++) {
-		for (int j = 0; j < (1 << (n * 2)); j ++) {
-			if (dp[i][j] == inf) continue;
-			int t = 0;
-			for (int k = 0; k < n * 2; k ++) t += (j >> k) & 1;
-			if (c[i] <= n) {
-				if (s > (cnt[c[i]] - ((j >> (c[i] - 1)) & 1))) upd1(dp[i + 1][j], dp[i][j] + a[i - t]);
-				if (!((j >> (c[i] - 1)) & 1)) upd1(dp[i + 1][j | (1 << (c[i] - 1))], dp[i][j] + b[t]);
-			}
-			else {
-				if (s > (cnt[c[i]] - ((j >> (c[i] - 1)) & 1))) upd2(dp[i + 1][j], dp[i][j] - a[i - t]);
-				if (!((j >> (c[i] - 1)) & 1)) upd2(dp[i + 1][j | (1 << (c[i] - 1))], dp[i][j] - b[t]);
-			}
-		}
-		cnt[c[i]] ++;	
-	}
-	cout << dp[2 * n * (s + 1)][(1 << (n * 2)) - 1] << '\n';
+	cout << dfs(0, 0) << '\n';
 	return 0;
 }
