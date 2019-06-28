@@ -54,3 +54,14 @@ YES/NO大小写
 1
 数据范围，不能越界，用作数组下标或者右值的时候
 1
+multiset的count给T了，改map过了
+1
+除0
+1
+爆int
+1
+quanlity和quality
+1
+条件没有
+1
+字符串哈希，'a'不能哈希成0，因为空才是0，否则ab=b
