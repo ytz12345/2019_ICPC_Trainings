@@ -2,61 +2,40 @@
 
 using namespace std;
 
-typedef __int128 ll;
-
-const int Mod = 1e9 + 7;
+typedef long long ll;
 
 const int N = 10010;
 
-ll n, m, a[N], b[N], c[N];
+ll n, m, a[N];
 
 ll p, q, g;
 
-ll tp, tq;
-
-ll sqr(ll x) {
-	return x * x;
-}
-
 int main() {
 	ios::sync_with_stdio(false);
-	int tmp;
-	while (cin >> tmp) {
-		n = tmp, cin >> tmp, m = tmp;
-		//
-		p = q = 0;
-		memset (c, 0, sizeof c);
-		p = -m;
+	while (cin >> n >> m) {
 		for (int i = 1; i <= n; i ++)
-			cin >> tmp, a[i] = tmp, p += a[i];
-		tp = -p, tq = n * m;//tp/tq个单位法向量
-		/*p *= p, q = n * m * m;
-		g = __gcd(p, q);
-		p /= g, q /= g;*/
-		ll sum = 0, cnt = 0;
-		//cout << (long long)tp << endl;
-		for (int i = 1; i <= n; i ++)
-			if ((b[i] = a[i] * n + tp) < 0) {
-				c[i] = 1;
-				cnt ++;
-				sum -= b[i];
-				b[i] = 0;
+			cin >> a[i];
+		sort (a + 1, a + n + 1, [&](ll x, ll y) {
+			return x > y;
+		});
+		ll sum = 0, ss = 0; int pos = n;
+		for (int i = 1; i < n; i ++) {
+			sum += a[i];
+			if (sum - a[i + 1] * i >= m) {
+				pos = i;
+				break;
 			}
-		for (int i = 1; i <= n; i ++) {
-			if (c[i]) continue;
-			b[i] = b[i] * (n - cnt) - sum;
-			//printf("%d %lld\n", i, (long long)b[i]);
 		}
-		p = 0;
-		for (int i = 1; i <= n; i ++) {
-			p += sqr(a[i] * n * (n - cnt) - b[i]);
-		}
-		q = n * m * m * n * sqr(n - cnt);
+		if (pos == n) sum += a[n];
+		//printf("? %d %lld\n", pos, sum);
+		for (int i = pos + 1; i <= n; i ++)
+			ss += a[i] * a[i];
+		q = pos * m * m;
+		p = (sum - m) * (sum - m) + ss * pos;
 		g = __gcd(p, q);
 		p /= g, q /= g;
-		if (p == 0) puts("0");
-		else if (q == 1) printf("%lld\n", (long long)p);
-		else printf("%lld/%lld\n", (long long)p, (long long)q);
+		if (q == 1) printf("%lld\n", p);
+		else printf("%lld/%lld\n", p, q);
 	}
 	return 0;
 }
