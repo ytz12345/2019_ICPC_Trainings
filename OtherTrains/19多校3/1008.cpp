@@ -23,37 +23,7 @@ struct query {
         if(bel(r) != bel(b.r)) return r < b.r;
         return id < b.id;
     }
-} q[N];
-
-void change_add(int cur){
-    if(pos[cur] >= pl && pos[cur] <= pr){
-        cnt[b[pos[cur]]]--;
-        if(!cnt[b[pos[cur]]]) res--;
-    }
-    pre[cur] = b[pos[cur]];
-    b[pos[cur]] = val[cur];
-    if(pos[cur] >= pl && pos[cur] <= pr){
-        if(!cnt[b[pos[cur]]]) res++;
-        cnt[b[pos[cur]]]++;
-    }
-}
-
-void change_del(int cur){
-    if(pos[cur] >= pl && pos[cur] <= pr){
-        cnt[b[pos[cur]]]--;
-        if(!cnt[b[pos[cur]]]) res--;
-    }
-    b[pos[cur]] = pre[cur];
-    if(pos[cur] >= pl && pos[cur] <= pr){
-        if(!cnt[b[pos[cur]]]) res++;
-        cnt[b[pos[cur]]]++;
-    }
-}
-
-void change(int now){
-    while(cur < idxC && tim[cur + 1] <= now) change_add(++cur);
-    while(cur && tim[cur] > now) change_del(cur--);
-}
+}q[N];
 
 void add(int p){
     res += cnt[b[p]];
@@ -63,6 +33,24 @@ void add(int p){
 void del(int p){
     cnt[b[p]] --;
     res -= cnt[b[p]];
+}
+
+void change_add(int cur){
+    if(pos[cur] >= pl && pos[cur] <= pr) del(pos[cur]);
+    pre[cur] = b[pos[cur]];
+    b[pos[cur]] = val[cur];
+    if(pos[cur] >= pl && pos[cur] <= pr) add(pos[cur]);
+}
+
+void change_del(int cur){
+    if(pos[cur] >= pl && pos[cur] <= pr) del(pos[cur]);
+    b[pos[cur]] = pre[cur];
+    if(pos[cur] >= pl && pos[cur] <= pr) add(pos[cur]);
+}
+
+void change(int now){
+    while(cur < idxC && tim[cur + 1] <= now) change_add(++ cur);
+    while(cur > 0    && tim[cur]     >  now) change_del(cur --);
 }
 
 int main(){
@@ -95,7 +83,7 @@ int main(){
         }
 
         for (int i = 1; i <= n; i ++) 
-            b[i] = b[i - 1] ^ d[i], a[i] = d[i];
+            b[i] = b[i - 1] ^ d[i];
 
         pl = 1, pr = 0; cur = res = 0;
         sort(q + 1, q + idxQ + 1);
@@ -110,11 +98,8 @@ int main(){
         for(int i = 1; i <= idxQ; i++)
             printf("%lld\n", ans[i]);
 
-        mst(cnt);
-        mst(tim);
-        mst(pos);
-        mst(val);
-        mst(pre);
+        for (int i = pl; i <= pr; i ++)
+            cnt[b[i]] --;
     }
     
     return 0;
