@@ -35,22 +35,15 @@ void del(int p){
     res -= cnt[b[p]];
 }
 
-void change_add(int cur){
+void modify(int cur, int dir = 1){
     if(pos[cur] >= pl && pos[cur] <= pr) del(pos[cur]);
-    pre[cur] = b[pos[cur]];
-    b[pos[cur]] = val[cur];
-    if(pos[cur] >= pl && pos[cur] <= pr) add(pos[cur]);
-}
-
-void change_del(int cur){
-    if(pos[cur] >= pl && pos[cur] <= pr) del(pos[cur]);
-    b[pos[cur]] = pre[cur];
+    b[pos[cur]] = dir == 1 ? val[cur] : pre[cur];
     if(pos[cur] >= pl && pos[cur] <= pr) add(pos[cur]);
 }
 
 void change(int now){
-    while(cur < idxC && tim[cur + 1] <= now) change_add(++ cur);
-    while(cur > 0    && tim[cur]     >  now) change_del(cur --);
+    while(cur < idxC && tim[cur + 1] <= now) modify(++ cur);
+    while(cur > 0    && tim[cur]     >  now) modify(cur --, -1);
 }
 
 int main(){
@@ -71,10 +64,12 @@ int main(){
                 q[idxQ].tim = i;
                 scanf("%d %d", &q[idxQ].l, &q[idxQ].r);
                 q[idxQ].l --;
+                ans[idxQ] = 1ll * (q[idxQ].r - q[idxQ].l) * (q[idxQ].r - q[idxQ].l + 1) / 2;
             }
             else {
                 tim[++ idxC] = i;
                 scanf("%d", &x);
+                pre[idxC] = b[x];
                 b[x] ^= a[x], b[x] ^= a[x + 1];
                 swap(a[x], a[x + 1]);
                 pos[idxC] = x;
@@ -93,7 +88,7 @@ int main(){
             while(pr < q[i].r) add(++ pr);
             while(pl < q[i].l) del(pl ++);
             while(pr > q[i].r) del(pr --);
-            ans[q[i].id] = res;
+            ans[q[i].id] -= res;
         }
         for(int i = 1; i <= idxQ; i++)
             printf("%lld\n", ans[i]);

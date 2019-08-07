@@ -6,7 +6,7 @@ int main() {
 	srand(time(NULL));
 	ios::sync_with_stdio(false);
 	int t = 3;
-	int N = 100, X = 64;
+	int N = 10, X = 8;
 	while (t --) {
 		int n = rand() % N + 1;
 		while (n == 1) {
