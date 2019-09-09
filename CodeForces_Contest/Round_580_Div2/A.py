@@ -1,0 +1,5 @@
+input()
+a = max(list(map(int, input().split())))
+input()
+b = max(list(map(int, input().split())))
+print(a, b)
