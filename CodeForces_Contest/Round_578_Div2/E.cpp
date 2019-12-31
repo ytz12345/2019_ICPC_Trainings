@@ -2,40 +2,39 @@
 
 using namespace std;
 
-const int N = 1e6 + 5;
+typedef long long ll;
 
-int kmp(int n, char *a) {
-	static int nxt[N], i, j;
-	for (nxt[0] = j = -1, i = 1; i < n; nxt[i ++] = j) {
-		while (~j && a[j + 1] != a[i]) j = nxt[j];
-		if (a[j + 1] == a[i]) j ++;
-	}
-	return nxt[n - 1];
-}
+const int Mod = 998244353;
+const int N = 1e6 + 5;
+const int K = 233;
+
+char ans[N], s[N];
+
+ll hh[N], hs[N], pw[N];
 
 int n, p;
 
-char str[N], ans[N];
-
-string s[100010];
-
 int main() {
-	ios::sync_with_stdio(false);
-	cin >> n;
-	for (int i = 0; i < n; i ++)
-		cin >> s[i];
-	for (int i = 0; i < s[0].size(); i ++)
-		ans[p ++] = s[0][i];
-	for (int i = 1; i < n; i ++) {
-		int j = 0, len = s[i].size();
-		while (j < len) str[j] = s[i][j], j ++;
-		str[len] = '*';
-		int ll = s[i - 1].size(); 
-		for (j = 0; j < ll; str[len + 1 + j] = s[i - 1][j], j ++);
-		for (j = kmp(len + ll + 1, str) + 1; j < len; j ++)
-			ans[p ++] = s[i][j];
+	scanf("%d", &n); pw[0] = 1;
+	for (int i = 1; i < N; i ++) pw[i] = pw[i - 1] * K % Mod;
+	for (int t = 0; t < n; t ++) {
+		scanf("%s", s + 1);
+		int len = strlen(s + 1);
+		for (int i = 1, j = len; i <= j; i ++)
+			hs[i] = (hs[i - 1] * K % Mod + s[i]) % Mod;
+		int pos = 1;
+		for (int i = min(p, len); i >= 1; i --) {
+			if (hs[i] == ((hh[p] - hh[p - i] * pw[i] % Mod) % Mod + Mod) % Mod) {
+				pos = i + 1;
+				break;
+			}
+		}
+		for (int i = pos; i <= len; i ++) {
+			ans[++ p] = s[i];
+			hh[p] = (hh[p - 1] * K % Mod + s[i]) % Mod;
+		}
 	}
-	ans[p] = 0;
-	puts(ans);
+	ans[p + 1] = 0;
+	puts(ans + 1);
 	return 0;
 }
